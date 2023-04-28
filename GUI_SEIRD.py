@@ -45,7 +45,7 @@ def COVID19_Predictor():
  
  if selected_dataset == 'Dataset1':
     url1= "https://github.com/norsyahidahzul/GUI-SEIRD_PredictiveModel/blob/5326ecd33c7e91c302a83123a983eeee3a0126e6/Data_Covid19_MalaysiaGeneral%20(first-third%20wave).xlsx"
-    df1 = pd.read_excel (url1) 
+    df1 = pd.read_excel (url1, engine='xlrd') 
     covid_history = df1 
     #initial condition and initial values of parameters
     #initN (Malaysian Population 2020- include non citizen)
@@ -340,7 +340,7 @@ def COVID19_Predictor():
    
  if selected_dataset == 'Dataset2':
     url2 = "https://github.com/norsyahidahzul/GUI-SEIRD_PredictiveModel/blob/5326ecd33c7e91c302a83123a983eeee3a0126e6/Data_Covid19_MalaysiaGeneral%20(second-third%20wave).xlsx"
-    df2 = pd.read_excel (url2) 
+    df2 = pd.read_excel (url2, engine='xlrd') 
     covid_history = df2         
     #initial condition and initial values of parameters
     #initN (Malaysian Population 2020- include non citizen)
