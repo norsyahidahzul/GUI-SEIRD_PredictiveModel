@@ -6,7 +6,6 @@ import matplotlib.pyplot as plt
 from scipy.integrate import odeint
 from lmfit import Parameters
 import plotly.graph_objects as go
-from tabulate import tabulate
 from lmfit import minimize, Parameters, report_fit
 
  
