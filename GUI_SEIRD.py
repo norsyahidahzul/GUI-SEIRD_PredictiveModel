@@ -1,20 +1,17 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import openpyxl
 import matplotlib.pyplot as plt
 from scipy.integrate import odeint
 from lmfit import Parameters
 import plotly.graph_objects as go
 
-
- 
 def COVID19_Predictor():
  #with st.sidebar:
     
  instructions1 = """
     Dataset 1: 25/1/2020-18/9/2020\n
-    Dataset 2: 27/2/2020-23/2/2021
+    Dataset 2: 27/2/2020-15/10/2020
     """    
     
  instructions2 = """   
@@ -41,16 +38,21 @@ def COVID19_Predictor():
     with col2:    
        r= st.slider("Proportion of quarantine rule-abiding population (%)", min_value=0.0, max_value=1.0, value=0.6, step=0.011)
  
-
+ # Read in data from the Google Sheet.
+ # Uses st.cache_data to only rerun when the query changes or after 10 min.
+ @st.cache_data(ttl=600)
+ def load_data(sheets_url):
+    csv_url = sheets_url.replace("/edit#gid=", "/export?format=csv&gid=")
+    return pd.read_csv(csv_url)
+ df1 = load_data(st.secrets["public_gsheets_url_DS1"])
+ df2 = load_data(st.secrets["public_gsheets_url_DS2"])
  
  if selected_dataset == 'Dataset1':
-    url1= "https://github.com/norsyahidahzul/GUI-SEIRD_PredictiveModel/blob/5326ecd33c7e91c302a83123a983eeee3a0126e6/Data_Covid19_MalaysiaGeneral%20(first-third%20wave).xlsx"
-    df1 = pd.read_excel (url1, engine='xlrd') 
+    
     covid_history = df1 
+    
     #initial condition and initial values of parameters
-    #initN (Malaysian Population 2020- include non citizen)
-    
-    
+    #initN (Malaysian Population 2020- include non citizen)   
     initN = 32657300
     days = 264  
     tMCO=53
@@ -168,19 +170,18 @@ def COVID19_Predictor():
        
             fig = go.Figure()
             #to able functionality of selectbox, put if statement
-            fig.add_trace(go.Scatter(x=df1['date'][0:tRMCO], y=I[0:tRMCO], mode='lines',line_color='purple', name='Simulated'))
-            fig.add_trace(go.Scatter(x=df1['date'][tRMCO:days+1], y=I[tRMCO:days+1], mode='lines',line_color='orange', name='Simulated'))
+            fig.add_trace(go.Scatter(x=df1['date'][0:tRMCO], y=I[0:tRMCO], mode='lines',line_color='purple', name='Phase I and II'))
+            fig.add_trace(go.Scatter(x=df1['date'][tRMCO:days+1], y=I[tRMCO:days+1], mode='lines',line_color='orange', name='Phase III'))
             fig.add_trace(go.Scatter(x=df1['date'], y=covid_history.iloc[0:days+1].daily_active_cases, mode='markers', marker_symbol='square',marker_color='purple',\
                                  name='Actual data', line = dict(dash='dash')))
         
          
             fig.update_layout(title='',
-                xaxis_title='Days (year 2020)',
+                xaxis_title='Days',
                 yaxis_title='The number of active cases (I)',
                 title_x=0.3, font_size= 22,
-                width=700, height=500, xaxis_range=[df1['date'][0],df1['date'][days+1]],
-                         )
-            fig.update_xaxes(tickangle=0, tickformat =  '%d<Br> %b <Br> ', tickmode='array',title_font=dict(size=20), tickfont=dict(size=20))
+                width=700, height=500)
+            fig.update_xaxes(tickangle=-45, tickformat = '%b %d',title_font=dict(size=20), tickfont=dict(size=20))
             fig.update_yaxes(title_font=dict(size=20), tickfont=dict(size=20))
             fig.update_layout(legend=dict(font=dict(size=20)))
             fig.update_layout(
@@ -322,7 +323,7 @@ def COVID19_Predictor():
                 title_x=0.3, font_size= 22,
                 width=700, height=500, xaxis_range=[df1['date'][0],df1['date'][days+1]]
                          )
-            fig.update_xaxes(tickangle=0, tickformat =  '%d<Br> %b <Br> ', tickmode='array',title_font=dict(size=18), tickfont=dict(size=16))
+            fig.update_xaxes(tickangle=-45, tickformat =  '%d<Br> %b <Br> ', tickmode='array',title_font=dict(size=18), tickfont=dict(size=16))
             fig.update_yaxes(title_font=dict(size=18), tickfont=dict(size=16))
             fig.update_layout(legend=dict(font=dict(size=18)))
             fig.update_layout(
@@ -339,9 +340,9 @@ def COVID19_Predictor():
 
    
  if selected_dataset == 'Dataset2':
-    url2 = "https://github.com/norsyahidahzul/GUI-SEIRD_PredictiveModel/blob/5326ecd33c7e91c302a83123a983eeee3a0126e6/Data_Covid19_MalaysiaGeneral%20(second-third%20wave).xlsx"
-    df2 = pd.read_excel (url2, engine='xlrd') 
-    covid_history = df2         
+    
+    covid_history = df2    
+    
     #initial condition and initial values of parameters
     #initN (Malaysian Population 2020- include non citizen)
     initN = 32657300
@@ -472,7 +473,7 @@ def COVID19_Predictor():
                 title_x=0.3, font_size= 22,
                 width=700, height=500, xaxis_range=[df2['date'][0],df2['date'][days+1]], yaxis_range=[0,4000]
                          )
-            fig.update_xaxes(tickangle=0, tickformat =  '%d<Br> %b <Br> ', tickmode='array',title_font=dict(size=18), tickfont=dict(size=16))
+            fig.update_xaxes(tickangle=-45 , tickformat =  '%d<Br> %b <Br> ', tickmode='array',title_font=dict(size=18), tickfont=dict(size=16))
             fig.update_yaxes(title_font=dict(size=18), tickfont=dict(size=16))
             fig.update_layout(legend=dict(font=dict(size=18)))
             fig.update_layout(
@@ -607,9 +608,9 @@ def COVID19_Predictor():
                 xaxis_title='Days (year 2020)',
                 yaxis_title='The number of active cases (I)',
                 title_x=0.3, font_size= 22,
-                width=700, height=500, xaxis_range=[df2['date'][0],df2['date'][days+1]], yaxis_range=[0,4000]
+                width=700, height=500
                          )
-            fig.update_xaxes(tickangle=0, tickformat =  '%d<Br> %b <Br> ', tickmode='array',title_font=dict(size=18), tickfont=dict(size=16))
+            fig.update_xaxes(tickangle=-45, tickformat =  '%d<Br> %b <Br> ', tickmode='array',title_font=dict(size=18), tickfont=dict(size=16))
             fig.update_yaxes(title_font=dict(size=18), tickfont=dict(size=16))
             fig.update_layout(legend=dict(font=dict(size=18)))
             fig.update_layout(
@@ -621,13 +622,7 @@ def COVID19_Predictor():
             text = "<i>Created by Norsyahidah Zulkarnain, Department of Computational & Theoretical Sciences, Kulliyyah of Science, IIUM</i>"         
             st.markdown(f"<span style='font-size:12px;'>{text}</span>", unsafe_allow_html=True)
     
-            
-            
-                
-          
-               
    
-    
 
 st.set_page_config(page_title="GUI-SEIRD Predictive Model for COVID-19 📈", page_icon="📈", layout="centered")
 st.markdown("## GUI-SEIRD Predictive Model for COVID-19 📈")
